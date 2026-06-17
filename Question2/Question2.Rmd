@@ -1,0 +1,71 @@
+---
+title: "Baby Names: Naming Trends Through Time"
+author: "24693197"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+list.files('code/', full.names = T, recursive = T) %>%
+    .[grepl('.R', .)] %>%
+    as.list() %>%
+    walk(~source(.))
+
+BabyNames <- read_rds("data/US_Baby_names/Baby_Names_By_US_State.rds")
+Billboard <- read_rds("data/US_Baby_names/charts.rds")
+HBO_titles <- read_rds("data/US_Baby_names/HBO_titles.rds")
+HBO_credits <- read_rds("data/US_Baby_names/HBO_credits.rds")
+```
+
+```{r inspect, include=FALSE}
+#Have a look at each dataset to see what I am working with
+glimpse(BabyNames)
+glimpse(Billboard)
+glimpse(HBO_titles)
+glimpse(HBO_credits)
+
+# Check for NA values
+BabyNames %>% summarise(across(everything(), ~sum(is.na(.))))
+```
+
+# Introduction
+- Used US baby name data (1910-2014, by state) alongside Billboard chart history and HBO titles/credits to look at naming trends
+- Goal: test whether name persistence has weakened since the 1990s, and find examples of names spiking due to cultural events (songs, shows, celebrities)
+
+# Naming Persistence Over Time
+
+For each year, I took the top 25 boys' and girls' names nationally (summed across states), and compared that ranking to the top 25 from the same sex three years later using Spearman rank correlation (only names appearing in both years are compared).
+
+```{r persistence-calc}
+Years <- BabyNames$Year %>% unique() %>% sort()
+Years <- Years[Years <= max(Years) - 3]
+
+PersistenceResult <-
+    expand_grid(Year = Years, Gender = c("M", "F")) %>%
+    mutate(Corr = map2_dbl(Year, Gender, ~rank_persistence(BabyNames, .x, .y)))
+```
+
+```{r persistence-plot}
+g <- persistence_plot(PersistenceResult)
+g
+```
+
+- Persistence dropped and became more volatile after 1990 (for both sexes)
+- Girls' names persistence started weakening earlier (mid-1950s/60s, not 1990)
+- Boys' names persistence stayed stable until about 1990, then matched the same pattern
+- Persistence is mostly weaker and more volatile since 1990 than in the early decades (for both sexes)
+
+# Naming Spikes and Cultural Events
+
+I looked for names with the biggest single-year jump in national popularity, then checked whether anything in the Billboard or HBO data could plausibly explain the spike (e.g. a hit song or popular show character with the same name).
+
+```{r find-surges}
+NameSurges <- find_name_surges(BabyNames, top_n = 15)
+NameSurges
+```
+
+[pattern-hunt section - next]
+
+
+
