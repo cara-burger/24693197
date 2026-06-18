@@ -7,10 +7,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(tidyverse)
-list.files('code/', full.names = T, recursive = T) %>%
-    .[grepl('.R', .)] %>%
-    as.list() %>%
-    walk(~source(.))
+list.files('code/', full.names = T, recursive = T) %>% .[grepl('.R', .)] %>%  as.list() %>% walk(~source(.))
 
 BabyNames <- read_rds("data/US_Baby_names/Baby_Names_By_US_State.rds")
 Billboard <- read_rds("data/US_Baby_names/charts.rds")
@@ -41,10 +38,10 @@ Years <- BabyNames$Year %>% unique() %>% sort()
 Years <- Years[Years <= max(Years) - 3]
 
 PersistenceResult <- expand_grid(Year = Years, Gender = c("M", "F")) %>%
-    mutate(Corr = map2_dbl(Year, Gender, ~rank_persistence(BabyNames, .x, .y)))
+    mutate(Corr = map2_dbl(Year, Gender, ~calc_rank_persistence(BabyNames, .x, .y)))
 ```
 
-```{r persistence-plot, include=FALSE, echo=FALSE}
+```{r persistence-plot, echo=FALSE}
 g <- persistence_plot(PersistenceResult)
 g
 ```
@@ -70,8 +67,8 @@ g <- surge_plot(BabyNames, top_n = 20)
 g
 ```
  
-- Several of the biggest male-name surges (Robert, John, James, Richard, Michael)   all happen in exactly the same year (1946) which suggests something bigger was     driving names generally that year, not a separate cause for each one
-    - This is likely due to the post-WW1 baby-boom that occurred
+- Several of the biggest male-name surges (Robert, John, James, Richard, Michael) all happen in exactly the same year (1946) which suggests something bigger was driving names generally that year, not a separate cause for each one
+    - This is likely due to the post-WW11 baby-boom that occurred
 - Female surges (Linda, Shirley, Ashley) are more spread out across different       years, more consistent with separate, name-specific causes
     - Shirley's surge coincides with the rise of child actress Shirley Temple, who became one of Hollywood's top stars by 1934 and was the industry's #1 box-office draw from 1935-1938, which is a classic example of a single celebrity driving a national naming trend.
     - Linda and Ashley most likely follow a similar culturally-driven trend as Shirley

@@ -33,7 +33,7 @@ Coffee <- silent_read(path = "Question1/data/Coffee/Coffee.csv")
 
 First I ran unique() %>% sort() on the origin and roaster columns to spot any duplicates or inconsistencies. Roaster near-duplicates (things like curly vs straight apostrophes, or "Cafe" vs "Café") were checked but left as is because I confirmed they don't affect the top 10 supplier results since none of the split pairs have enough reviews to change the rankings. Origins needed more attention though, since inconsistent suffixes (e.g. "Chiriqui Growing Region" vs "Chiriqui Province" vs "Chiriquí") were visibly splitting what should be the same place into separate groups in the plots (which I discovered while plotting). I stripped the suffixes using gsub() and standardised the accented characters I spotted from the output. Also tidied origin_1/origin_2 and desc_1/desc_2/desc_3 from wide to long format since each is really one variable spread across multiple columns.
 
-```{r}
+```{r data work, include=FALSE}
 
 # Check for missing values/NA's
 Coffee %>% summarise(across(everything(), ~sum(is.na(.))))
@@ -97,7 +97,7 @@ keyword_plot(Coffee_long)
 
 # Question 2: Baby Names
 
-## Approach
+# Approach
 
 This question asked for the analysis of US baby naming trends (1910-2014) for a toy design agency.The agency propositioned this in order to understand what drives naming trends and how long they persist, to inform toy character naming decisions.
 
@@ -127,7 +127,7 @@ BabyNames %>% summarise(across(everything(), ~sum(is.na(.))))
 ```
 
 
-# Naming Persistence Over Time
+## Naming Persistence Over Time
 
 calc_rank_persistence() takes the top 25 names for a given year and sex, then looks up each of those names in the full national ranking three years later however far down they may have fallen. This is better than comparing two top-25 lists directly (which was my initial appraoch), because names that dropped out of the top 25 still get penalised rather than being silently excluded. persistence_plot() then plots the resulting Spearman correlation for every year from 1910 to 2011, separately for boys and girls.
 
@@ -146,7 +146,7 @@ persistence_plot(PersistenceResult)
 - Boys' names persistence stayed stable until about 1990, then matched the same pattern
 - Persistence is mostly weaker and more volatile since 1990 than in the early decades (for both sexes)
 
-# Naming Surges and Cultural Events
+## Naming Surges and Cultural Events
 
 The brief's tip was to look for year-on-year surges and dig into what might explain them, with Whitney in the 1980s given as the model example. So I built find_name_surges() to find the biggest single-year jumps in national popularity.
 
@@ -215,7 +215,7 @@ And suprise, suprise! Daleyza's spike is heavily concentrated in California and 
 
 This question asked for an analysis of US household loan default trends using anonymised Lending Club peer-to-peer lending data. The Director of the Credit Institute in Texas wanted to understand what drives defaults and whether four beliefs of the Institute hold up against the data.
 
-```{r setup-data}
+```{r setup-data, include=FALSE}
 list.files('Question3/code/', full.names = T, recursive = T) %>% .[grepl('.R', .)] %>%
     as.list() %>% walk(~source(.))
 
@@ -235,7 +235,7 @@ Loan_credit <- clean_loans(Loan_credit)
 
 The data has 1 million rows and 145 columns, so the first thing I did was reduce it to only the columns actually needed for analysis. I then built a clean_loans() function to create the outcome variables, convert text columns to numeric, and Winsorise relevant (ie. variables with crazy values as seen from the summary function) continuous variables at the 1st and 99th percentiles. Since there is no age variable in the dataset, I used credit history length derived from earliest_cr_line as a proxy since I thought that a longer history likely means an older borrower.
 
-# Key Risk Drivers
+## Key Risk Drivers
 
 The dataset contains many variables that could serve as default risk drivers (revolving credit utilisation (revol_util), number of public records (pub_rec), debt-to-incomeratio (dti), income verification status (verification_status), and annual income (annual_inc) are all standard credit risk indicators a lender would most likely consider. However, I focused on credit grade and loan purpose because they are the most immediately interpretable at a glance as a director looking at a bar chart of default rates by grade or by loan purpose can draw actionable conclusions without needing to understand the underlying variable in detail. 
 
@@ -251,7 +251,7 @@ defaults_by_purpose_plot(Loan_credit)
 
 Car and home improvement loans carry the lowest default rates at around, while small business and wedding loans sit at the top at. Thus, lenders should apply greater scrutiny to higher-risk purpose categories when assessing borrower credibility. This plot provides evidence that loan purpose is a a good credit risk signal. 
 
-# Looking at the Beliefs held by the Institute
+## Looking at the Beliefs held by the Institute
 
 The Director wishes to challenge four core beliefs held by the Institute so I tested each one using the cleaned data, building a separate plot for each belief.
 
@@ -261,7 +261,7 @@ The first belief was that homeowners and people employed for more than 10 years 
 homeowner_employment_plot(Loan_credit)
 ```
 
-The plot somewhat confirms this belief since borrowers employed for 10 or more years show slightly lower default rates (lower by $1%$). This difference is really small so this belief is only partly supported by the data. On the other hand, homeowners (those with over and under 10 years of employment) have higher default rates than borrowers.
+The plot somewhat confirms this belief since borrowers employed for 10 or more years show slightly lower default rates (lower by 1%). This difference is really small so this belief is only partly supported by the data. On the other hand, homeowners (those with over and under 10 years of employment) have higher default rates than borrowers.
 
 The second belief was that US states differ significantly in their culture of defaulting. To test this I plotted default rates for every state ordered from lowest to highest, with Texas highlighted separately so it is easy to see where it sits relative to the rest.
 
@@ -269,7 +269,7 @@ The second belief was that US states differ significantly in their culture of de
 default_by_state_plot(Loan_credit)
 ```
 
-This belief is more closely supported by the data because default rates range from around $14%$ to about $27%/28%$. This means that US states do in fact differ significantly in default culture. Texas sits close to the average when looking at the bigger picture. 
+This belief is more closely supported by the data because default rates range from around 14% to about 27%/28%. This means that US states do in fact differ significantly in default culture. Texas sits close to the average when looking at the bigger picture. 
 
 The third belief was that credit grades predict default well specifically for younger individuals. Since there is no age variable in the data I used credit history length as a proxy since shorter history likely means a younger borrower. I then plotted default rates by grade for each history group using facet_wrap, which creates one panel per group so the grade pattern can be compared side by side.
 
@@ -292,11 +292,15 @@ From this graph it is obvious that credit rating is an obvious determinant of in
 
 ## A note on knitting
 
-I unfortunately spent too long tweaking the Texevier YAML template for Question 3 and broke it (sorry) in the process. I get a `\pandocbounded` LaTeX error which I will torubleshoot if I have time. The analysis and all functions run correctly in RStudio, the PDF just would not compile in time. The full write-up lives in `Question3/Question3.Rmd` if needed.
+I unfortunately spent too long tweaking the Texevier YAML template for Question 3 and broke it (sorry) in the process. I get a LaTeX error which I will troubleshoot if I have time. The analysis and all functions run correctly in RStudio, the PDF just would not compile in time. The full write-up lives in `Question3/Question3.Rmd` if needed.
+
+## A note on the graphs inconsistency
+Note that question 3 uses the ggplot2::theme_bw(), while all other questions use fmxdat::theme_fmx with finplot() for formatting. This is because I struggled to get the theme_fmx to work here, I am still unsure why but I think it has something to do with me essentially breaking the Texevier template. I aimed for consistency in this question, but the graphs are now not consistent with the rest of the prac. 
 ---
 
 # Question 4: Netflix
 
+# Approach
 ## Data Loading and Setup
 
 ```{r q4 setup, include=FALSE}
