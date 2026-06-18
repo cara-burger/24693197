@@ -31,7 +31,7 @@ Coffee <- silent_read(path = "Question1/data/Coffee/Coffee.csv")
 
 ### Data prep
 
-Checked for missing values and a few messy duplicate names (e.g. roaster names with curly vs straight apostrophes) before tidying `origin_1`/`origin_2` and `desc_1`/`desc_2`/`desc_3` from wide to long format, since each is really one variable spread across multiple columns.
+First I ran unique() %>% sort() on the origin and roaster columns to spot any duplicates or inconsistencies. Roaster near-duplicates (things like curly vs straight apostrophes, or "Cafe" vs "Café") were checked but left as is because I confirmed they don't affect the top 10 supplier results since none of the split pairs have enough reviews to change the rankings. Origins needed more attention though, since inconsistent suffixes (e.g. "Chiriqui Growing Region" vs "Chiriqui Province" vs "Chiriquí") were visibly splitting what should be the same place into separate groups in the plots (which I discovered while plotting). I stripped the suffixes using gsub() and standardised the accented characters I spotted from the output. Also tidied origin_1/origin_2 and desc_1/desc_2/desc_3 from wide to long format since each is really one variable spread across multiple columns.
 
 ```{r}
 
@@ -218,7 +218,7 @@ list.files('Question3/code/', full.names = T, recursive = T) %>% .[grepl('.R', .
     as.list() %>% walk(~source(.))
 
 # Load the data
-Loan_credit <- read_rds("data/Loan_Cred/loan_data.rds")
+Loan_credit <- read_rds("Question3/data/Loan_Cred/loan_data.rds")
 
 # Look at the data to assess the necessary steps for cleaning
 dim(Loan_credit)
@@ -297,7 +297,7 @@ I unfortunately spent too long tweaking the Texevier YAML template for Question 
 
 ## Data Loading and Setup
 
-```{r setup}
+```{r q4 setup}
 list.files('Question4/code/', full.names = T, recursive = T) %>%
     .[grepl('.R', .)] %>% as.list() %>% walk(~source(.))
 

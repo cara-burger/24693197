@@ -7,9 +7,7 @@ output: powerpoint_presentation
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 library(tidyverse)
-list.files('code/', full.names = T, recursive = T) %>%
-    .[grepl('.R', .)] %>%
-    as.list() %>%
+list.files('code/', full.names = T, recursive = T) %>% .[grepl('.R', .)] %>% as.list() %>%
     walk(~source(.))
 Coffee <- silent_read(path = "data/Coffee/Coffee.csv")
 ```
@@ -20,18 +18,23 @@ glimpse(Coffee)
 # Check for missing values/NA's
 Coffee %>% summarise(across(everything(), ~sum(is.na(.))))
 
-# roaster has some near-duplicate spellings (accents/apostrophes) - left as is given time constraints
-Coffee %>% pull(roaster) %>% unique() %>% sort()
-
 Coffee_long <- Coffee %>%
     gather(origin_rank, origin, origin_1, origin_2) %>%
     gather(desc_rank, desc, desc_1, desc_2, desc_3) %>%
     filter(!is.na(desc))  # two coffees are missing a third review so those rows are dropped
 
-# Chiriquí was splitting into 2 rows under different spellings, messing up the "best rated" label - fixed here so it applies to all the origin plots
+# roaster has some near-duplicate spellings (accents/apostrophes), I checked whether
+# splits affected top 10 supplier plot results and confirmed they do not, so left as is
+Coffee %>% pull(roaster) %>% unique() %>% sort()
+
+# Ran unique() %>% sort() on origin columns and found near-duplicates caused by
+# inconsistent geographic suffixes and accented characters - fixed below
 Coffee_long <- Coffee_long %>%
-    mutate(origin = gsub(" Growing Region| Growing District| District| Department| County| Province| Zone| Region", "", origin)) %>%
-    mutate(origin = gsub("í", "i", origin))
+    mutate(origin = gsub("Growing Region|Growing District|District|Department|County|Province|Zone|Region", "", origin),
+           origin = gsub("í", "i", origin),
+           origin = gsub("á", "a", origin),
+           origin = gsub("ú", "u", origin),
+           origin = gsub("ñ", "n", origin))
 
 dim(Coffee_long)
 ```
