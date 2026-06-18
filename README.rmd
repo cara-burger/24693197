@@ -129,8 +129,7 @@ BabyNames %>% summarise(across(everything(), ~sum(is.na(.))))
 
 # Naming Persistence Over Time
 
-`calc_rank_persistence()` takes the top 25 names for a given year and sex, then looks up each of those names in the full national ranking three years later - however far down they may have fallen. This is better than comparing two top-25 lists directly, because names that dropped out of the top 25 still get penalised rather than being silently excluded. `persistence_plot()` then plots the resulting Spearman correlation for every 
-year from 1910 to 2011, separately for boys and girls.
+`calc_rank_persistence()` takes the top 25 names for a given year and sex, then looks up each of those names in the full national ranking three years later however far down they may have fallen. This is better than comparing two top-25 lists directly (which was my initial appraoch), because names that dropped out of the top 25 still get penalised rather than being silently excluded. `persistence_plot()` then plots the resulting Spearman correlation for every year from 1910 to 2011, separately for boys and girls.
 
 ```{r persistence-calc and plot}
 Years <- BabyNames$Year %>% unique() %>% sort()
@@ -218,8 +217,89 @@ And suprise, suprise! Daleyza's spike is heavily concentrated in California and 
 
 ## Approach
 
-Brief description of approach.
+This question asked for an analysis of US household loan default trends using anonymised Lending Club peer-to-peer lending data. The Director of the Credit Institute in Texas wanted to understand what drives defaults and whether four beliefs of the Institute hold up against the data.
 
+```{r setup-data}
+list.files('Question3/code/', full.names = T, recursive = T) %>%
+    .[grepl('.R', .)] %>%
+    as.list() %>%
+    walk(~source(.))
+
+# Load the data
+Loan_credit <- read_rds("data/Loan_Cred/loan_data.rds")
+
+# Look at the data to assess the necessary steps for cleaning
+dim(Loan_credit)
+
+glimpse(Loan_credit)
+
+summary(Loan_credit)
+
+# Apply data cleaning function
+Loan_credit <- clean_loans(Loan_credit)
+```
+
+The data has 1 million rows and 145 columns, so the first thing I did was reduce it to only the columns actually needed for analysis. I then built a `clean_loans()` function to create the outcome variables, convert text columns to numeric, and Winsorise relevant (ie. variables with crazy values as seen from the summary function) continuous variables at the 1st and 99th percentiles. Since there is no age variable in the dataset, I used credit history length derived from `earliest_cr_line` as a proxy since I thought that a longer history likely means an older borrower.
+
+# Key Risk Drivers
+
+The dataset contains many variables that could serve as default risk drivers (revolving credit utilisation (`revol_util`), number of public records (`pub_rec`), debt-to-incomeratio (`dti`), income verification status (`verification_status`), and annual income (`annual_inc`) are all standard credit risk indicators a lender would most likely consider. However, I focused on credit grade and loan purpose because they are the most immediately interpretable at a glance as a director looking at a bar chart of default rates by grade or by loan purpose can draw actionable conclusions without needing to understand the underlying variable in detail. 
+
+```{r q3-grade, echo=FALSE}
+defaults_by_grade_plot(Loan_credit)
+```
+
+The plot shows a clear strong relationship between credit grade and default rate (as expected). 
+
+```{r q3-purpose, echo=FALSE}
+defaults_by_purpose_plot(Loan_credit)
+```
+
+Car and home improvement loans carry the lowest default rates at around, while small business and wedding loans sit at the top at. Thus, lenders should apply greater scrutiny to higher-risk purpose categories when assessing borrower credibility. This plot provides evidence that loan purpose is a a good credit risk signal. 
+
+# Looking at the Beliefs held by the Institute
+
+The Director wishes to challenge four core beliefs held by the Institute so I tested each one using the cleaned data, building a separate plot for each belief.
+
+The first belief was that homeowners and people employed for more than 10 years default far less on short-term loans. To test this I built a line plot showing default rates across home ownership categories, with separate lines for borrowers employed 10+ years vs under 10 years, filtering to short-term loans only since the belief is specifically about those. The data contains only two loan terms (36 and 60 months) so 36 months is used as the short-term definition.
+
+```{r homeowner-employment, echo=FALSE}
+homeowner_employment_plot(Loan_credit)
+```
+
+The plot somewhat confirms this belief since borrowers employed for 10 or more years show slightly lower default rates (lower by $1%$). This difference is really small so this belief is only partly supported by the data. On the other hand, homeowners (those with over and under 10 years of employment) have higher default rates than borrowers.
+
+The second belief was that US states differ significantly in their culture of defaulting. To test this I plotted default rates for every state ordered from lowest to highest, with Texas highlighted separately so it is easy to see where it sits relative to the rest.
+
+```{r default_by_state, echo=FALSE}
+default_by_state_plot(Loan_credit)
+```
+
+This belief is more closely supported by the data because default rates range from around $14%$ to about $27%/28%$. This means that US states do in fact differ significantly in default culture. Texas sits close to the average when looking at the bigger picture. 
+
+The third belief was that credit grades predict default well specifically for younger individuals. Since there is no age variable in the data I used credit history length as a proxy since shorter history likely means a younger borrower. I then plotted default rates by grade for each history group using `facet_wrap`, which creates one panel per group so the grade pattern can be compared side by side.
+
+```{r grade-age, echo=FALSE}
+grade_age_plot(Loan_credit)
+```
+
+The credit grading system has the same relationship as before for both younger (shorter credit history) and older (longer credit history) individuals. This relationship is that default rates increase with lower credit grades. The differences between older and younger individuals default rates' is very small. For higher grades, younger individuals have a slightly higher default rating while for higher grades it is the opposite. Thus, there is no evidence from the data to support the belief that grades work better or worse for younger borrowers specifically.
+
+The fourth belief was that interest rates are determined by age, occupation 
+and credit scores. Due to time constraints, I focused on credit grade as a proxy for credit score and plotted the median interest rate per grade. I will come back to this if I have the time - possible to plot age (as proxied by credit history) against median interest rates. 
+
+```{r int-rate, echo=FALSE}
+interest_rate_plot(Loan_credit)
+```
+
+I wanted to use the credit history length as a proxy for age here again, but I got stuck and am cautious of the time. I will return to this if I have time left. 
+
+From this graph it is obvious that credit rating is an obvious determinant of interest rates. From the basic understanding of interest rates and credit ratings, this correlation makes sense, because a lower credit rating means there is a higher risk of default. Thus, the risk is compensated for by a higher interest rate (compared to higher credit ratings). The dataset does not have any specific age or occupation data so it would be difficult to draw conculsions about those factors. 
+
+
+## A note on knitting
+
+I unfortunately spent too long tweaking the Texevier YAML template for Question 3 and broke it (sorry) in the process. I get a `\pandocbounded` LaTeX error which I will torubleshoot if I have time. The analysis and all functions run correctly in RStudio, the PDF just would not compile in time. The full write-up lives in `Question3/Question3.Rmd` if needed.
 ---
 
 # Question 4: Netflix

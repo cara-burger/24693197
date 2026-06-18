@@ -2,8 +2,8 @@ supplier_plot <- function(df, min_reviews = 5, max_cost = 20){
 
     plot_df <- df %>% group_by(roaster) %>%
         summarise(med_rating = median(Rating, na.rm = TRUE),
-                  med_cost   = median(Cost_Per_100g, na.rm = TRUE),
-                  n_reviews  = n()) %>% ungroup() %>%
+                  med_cost = median(Cost_Per_100g, na.rm = TRUE),
+                  n_reviews = n()) %>% ungroup() %>%
         filter(n_reviews >= min_reviews, med_cost <= max_cost) %>%
         arrange(desc(med_rating)) %>%
         head(10) %>% mutate(roaster = reorder(roaster, med_rating))
