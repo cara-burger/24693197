@@ -56,8 +56,7 @@ I plotted cost against rating to see if price actually tracks quality — bubble
 Northern Sumatra is both the highest-rated origin and inexpensive, while Cobán shows a well-rated coffee can be found for under $4 — high rating doesn't require a high price here.
 
 ```{r}
-g <- origin_cost_scatter(Coffee_long)
-g
+origin_cost_scatter(Coffee_long)
 ```
 
 ### Roast strength
@@ -67,8 +66,7 @@ A boxplot with individual reviews jittered on top shows both the typical rating 
 Light and Medium-Light roasts consistently outscore Medium, Medium-Dark, and especially Dark roasts. 
 
 ```{r}
-g <- roast_plot(Coffee)
-g
+roast_plot(Coffee)
 ```
 
 ### Top suppliers
@@ -78,8 +76,7 @@ Ranked suppliers by rating directly, since that's the simplest way to answer "wh
 Top-rated suppliers under $20/100g with at least 5 reviews each.
 
 ```{r}
-g <- supplier_plot(Coffee)
-g
+supplier_plot(Coffee)
 ```
 
 ### Matching student preferences
@@ -89,8 +86,7 @@ The brief gave a wordcloud of words Stellenbosch students used to describe coffe
 Reviews from Yemen, Tarrazu, and Boquete mention student-preferred flavour words (chocolate, aroma, savory, toned, sweetly, tart) most often.
 
 ```{r}
-g <- keyword_plot(Coffee_long)
-g
+keyword_plot(Coffee_long)
 ```
 
 ---
@@ -129,18 +125,16 @@ BabyNames %>% summarise(across(everything(), ~sum(is.na(.))))
 
 # Naming Persistence Over Time
 
-`calc_rank_persistence()` takes the top 25 names for a given year and sex, then looks up each of those names in the full national ranking three years later however far down they may have fallen. This is better than comparing two top-25 lists directly (which was my initial appraoch), because names that dropped out of the top 25 still get penalised rather than being silently excluded. `persistence_plot()` then plots the resulting Spearman correlation for every year from 1910 to 2011, separately for boys and girls.
+calc_rank_persistence() takes the top 25 names for a given year and sex, then looks up each of those names in the full national ranking three years later however far down they may have fallen. This is better than comparing two top-25 lists directly (which was my initial appraoch), because names that dropped out of the top 25 still get penalised rather than being silently excluded. persistence_plot() then plots the resulting Spearman correlation for every year from 1910 to 2011, separately for boys and girls.
 
 ```{r persistence-calc and plot}
 Years <- BabyNames$Year %>% unique() %>% sort()
 Years <- Years[Years <= max(Years) - 3]
 
-PersistenceResult <-
-    expand_grid(Year = Years, Gender = c("M", "F")) %>%
+PersistenceResult <- expand_grid(Year = Years, Gender = c("M", "F")) %>%
     mutate(Corr = map2_dbl(Year, Gender, ~calc_rank_persistence(BabyNames, .x, .y)))
 
-g <- persistence_plot(PersistenceResult)
-g
+persistence_plot(PersistenceResult)
 ```
 
 - Persistence dropped and became more volatile after 1990 (for both sexes)
@@ -150,7 +144,7 @@ g
 
 # Naming Surges and Cultural Events
 
-The brief's tip was to look for year-on-year surges and dig into what might explain them, with Whitney in the 1980s given as the model example. So I built `find_name_surges()` to find the biggest single-year jumps in national popularity.
+The brief's tip was to look for year-on-year surges and dig into what might explain them, with Whitney in the 1980s given as the model example. So I built find_name_surges() to find the biggest single-year jumps in national popularity.
 
 ```{r find-surges}
 NameSurges <- find_name_surges(BabyNames, top_n = 15)
@@ -168,15 +162,15 @@ NameSurges
 
 ## More Recent Rising Names
 
-To zoom into the most recent decade of data, I plotted the names with the biggest average rise in popularity between 2005 and 2014, separately for girls and boys, using my existing `plot_rising_names()` function. Rather than just listing the names with a single surge year, this shows their actual year-by-year counts as lines so it's possible to see each name rose, not just that it rose.
+To zoom into the most recent decade of data, I plotted the names with the biggest average rise in popularity between 2005 and 2014, separately for girls and boys, using my existing plot_rising_names() function. Rather than just listing the names with a single surge year, this shows their actual year-by-year counts as lines so it's possible to see each name rose, not just that it rose.
 
 # More Recent Rising Names
 ```{r rising names per gender plots, echo=FALSE}
-g <- plot_rising_names(BabyNames, gender_input = "F", from_year = 2005, to_year = 2014, top_n = 5)
-g
+plot_rising_names(BabyNames, gender_input = "F", from_year = 2005, to_year = 2014, top_n = 5)
 
-g <- plot_rising_names(BabyNames, gender_input = "M", from_year = 2005, to_year = 2014, top_n = 5)
-g
+
+plot_rising_names(BabyNames, gender_input = "M", from_year = 2005, to_year = 2014, top_n = 5)
+
 
 ```
 
@@ -220,10 +214,8 @@ And suprise, suprise! Daleyza's spike is heavily concentrated in California and 
 This question asked for an analysis of US household loan default trends using anonymised Lending Club peer-to-peer lending data. The Director of the Credit Institute in Texas wanted to understand what drives defaults and whether four beliefs of the Institute hold up against the data.
 
 ```{r setup-data}
-list.files('Question3/code/', full.names = T, recursive = T) %>%
-    .[grepl('.R', .)] %>%
-    as.list() %>%
-    walk(~source(.))
+list.files('Question3/code/', full.names = T, recursive = T) %>% .[grepl('.R', .)] %>%
+    as.list() %>% walk(~source(.))
 
 # Load the data
 Loan_credit <- read_rds("data/Loan_Cred/loan_data.rds")
@@ -239,19 +231,19 @@ summary(Loan_credit)
 Loan_credit <- clean_loans(Loan_credit)
 ```
 
-The data has 1 million rows and 145 columns, so the first thing I did was reduce it to only the columns actually needed for analysis. I then built a `clean_loans()` function to create the outcome variables, convert text columns to numeric, and Winsorise relevant (ie. variables with crazy values as seen from the summary function) continuous variables at the 1st and 99th percentiles. Since there is no age variable in the dataset, I used credit history length derived from `earliest_cr_line` as a proxy since I thought that a longer history likely means an older borrower.
+The data has 1 million rows and 145 columns, so the first thing I did was reduce it to only the columns actually needed for analysis. I then built a clean_loans() function to create the outcome variables, convert text columns to numeric, and Winsorise relevant (ie. variables with crazy values as seen from the summary function) continuous variables at the 1st and 99th percentiles. Since there is no age variable in the dataset, I used credit history length derived from earliest_cr_line as a proxy since I thought that a longer history likely means an older borrower.
 
 # Key Risk Drivers
 
-The dataset contains many variables that could serve as default risk drivers (revolving credit utilisation (`revol_util`), number of public records (`pub_rec`), debt-to-incomeratio (`dti`), income verification status (`verification_status`), and annual income (`annual_inc`) are all standard credit risk indicators a lender would most likely consider. However, I focused on credit grade and loan purpose because they are the most immediately interpretable at a glance as a director looking at a bar chart of default rates by grade or by loan purpose can draw actionable conclusions without needing to understand the underlying variable in detail. 
+The dataset contains many variables that could serve as default risk drivers (revolving credit utilisation (revol_util), number of public records (pub_rec), debt-to-incomeratio (dti), income verification status (verification_status), and annual income (annual_inc) are all standard credit risk indicators a lender would most likely consider. However, I focused on credit grade and loan purpose because they are the most immediately interpretable at a glance as a director looking at a bar chart of default rates by grade or by loan purpose can draw actionable conclusions without needing to understand the underlying variable in detail. 
 
-```{r q3-grade, echo=FALSE}
+```{r defaults-grade, echo=FALSE}
 defaults_by_grade_plot(Loan_credit)
 ```
 
 The plot shows a clear strong relationship between credit grade and default rate (as expected). 
 
-```{r q3-purpose, echo=FALSE}
+```{r defaults-purpose, echo=FALSE}
 defaults_by_purpose_plot(Loan_credit)
 ```
 
@@ -277,7 +269,7 @@ default_by_state_plot(Loan_credit)
 
 This belief is more closely supported by the data because default rates range from around $14%$ to about $27%/28%$. This means that US states do in fact differ significantly in default culture. Texas sits close to the average when looking at the bigger picture. 
 
-The third belief was that credit grades predict default well specifically for younger individuals. Since there is no age variable in the data I used credit history length as a proxy since shorter history likely means a younger borrower. I then plotted default rates by grade for each history group using `facet_wrap`, which creates one panel per group so the grade pattern can be compared side by side.
+The third belief was that credit grades predict default well specifically for younger individuals. Since there is no age variable in the data I used credit history length as a proxy since shorter history likely means a younger borrower. I then plotted default rates by grade for each history group using facet_wrap, which creates one panel per group so the grade pattern can be compared side by side.
 
 ```{r grade-age, echo=FALSE}
 grade_age_plot(Loan_credit)
@@ -296,7 +288,6 @@ I wanted to use the credit history length as a proxy for age here again, but I g
 
 From this graph it is obvious that credit rating is an obvious determinant of interest rates. From the basic understanding of interest rates and credit ratings, this correlation makes sense, because a lower credit rating means there is a higher risk of default. Thus, the risk is compensated for by a higher interest rate (compared to higher credit ratings). The dataset does not have any specific age or occupation data so it would be difficult to draw conculsions about those factors. 
 
-
 ## A note on knitting
 
 I unfortunately spent too long tweaking the Texevier YAML template for Question 3 and broke it (sorry) in the process. I get a `\pandocbounded` LaTeX error which I will torubleshoot if I have time. The analysis and all functions run correctly in RStudio, the PDF just would not compile in time. The full write-up lives in `Question3/Question3.Rmd` if needed.
@@ -304,9 +295,88 @@ I unfortunately spent too long tweaking the Texevier YAML template for Question 
 
 # Question 4: Netflix
 
-## Approach
+## Data Loading and Setup
 
-Brief description. Note which aspects of the data were chosen to explore and why.
+```{r setup}
+list.files('Question4/code/', full.names = T, recursive = T) %>%
+    .[grepl('.R', .)] %>% as.list() %>% walk(~source(.))
+
+# load raw data to see what we are working with
+titles <- read_rds("Question4/data/Netflix/titles.rds")
+netflix_movies <- read_csv("Question4/data/Netflix/Netflix_movies.csv")
+credits <- read_rds("Question4/data/Netflix/credits.rds")
+
+glimpse(titles)
+glimpse(netflix_movies)
+glimpse(credits)
+
+# clean and prep
+netflix <- clean_netflix("Question4/data/Netflix")
+titles_clean <- netflix$titles
+actors_clean <- netflix$actors
+```
+
+The data comes from three sources where titles.rds contains scores, genres, production countries, and runtime for all Netflix titles. credits.rds links actors and directors to titles via a shared id column. Netflix_movies.csv contains additional movie-level metadata including country, age rating, and genre categories. I used the glimpse() function as before to see what I was working with before approaching the data cleaning.
+
+Since all figures rely on titles and credits, the cleaning focuses on those two. For titles, I filtered to movies only, removed entries with missing or zero runtimes, and used gsub() to strip the brackets and quotes from the genres and production_countries columns so they read as plain comma-separated text. For credits I simply filtered to actors only as this is what will be useful for my plots later on. 
+
+## Genre Preferences by Country
+
+To identify what types of movies (genre) different countries produce, I used grepl() to see genre membership per title and map_dfr() to stack results into a long dataframe. The top 10 countries by movie count were selected via count() and slice_head(), with each movie assigned to its primary production country for faceting purposes.
+
+```{r genre-by-country}
+plot_genre_by_country(titles_clean)
+```
+
+Drama and comedy seem to be the most popular genre for most countries, but there are definitely differences between countries that are worth noting. For example, Japan stands out for its unusually high share of animation, while India, Nigeria and the Philippines have a high preference for drama and romance with little prefernce for science fiction or documentation content. Thus, content strategy should not be applied at a global level, but rather tailored to the tastes of individual countries.
+
+## Audience Ratings by Genre
+
+To understand what content audiences rate most highly, I computed the median IMDb score per genre using the same grepl() and map_dfr() pattern as before. Note that IMDb scores are global and not Netflix-specific so they should be read as a general quality signal rather than a platform performance measure.
+
+```{r score-by-genre}
+plot_score_by_genre(titles_clean)
+```
+
+History and documentary content have the highest median scores, which suggests that focusing on such niche content could be unique selling point for a new streaming platform.
+
+## Audience Engagement by Country
+
+TMDb popularity scores reflect active audience engagement (that being things like searches, watchlists, and rating activity)making them a better proxy for streaming performance than critic scores alone. Given heavy right skew in the distribution (median of about 6, max  of about 1823), a log scale was applied in finplot(log.y = TRUE).I noticed this after first plotting without the log scale and the results looking not so nice.
+
+```{r popularity-by-country}
+plot_popularity_by_country(titles_clean)
+```
+
+Japanese and English-language content (GB, US) drives the highest median engagement globally, while Nigerian and Filipino content (while still relatively popular) remains more locally concentrated.
+
+## Movie Runtime by Country
+
+I compared runtime distributions across the top 10 production countries using a boxplot with jitter overlay, to address the brief's requirement of looking at the runtimes. Each movie is assigned to its primary (first-listed) production country for grouping purposes. This is a deliberate simplification documented here as co-productions are counted under their lead country only. The fct_reorder() function orders countries by median runtime so the plot reads cleanly from shortest to longest.
+
+```{r runtime-by-country}
+plot_runtime_by_country(titles_clean)
+```
+
+Indian cinema has the longest median runtime by a clear margin, which matches what we know about the famously long format of Bollywood films. The US has the widest spread reflecting its greatly varied runtimes. A sweetspot is revealed though this data as the other countries seemingly cluster around the 90-110 minute mark. This sweetspot should be taken into account when choosing content for the new streaming platform.
+
+## Does Star Power Drive Audience Engagement?
+
+When I read the question for the first time, my curiosity was definitely piqued and I immediately knew I wanted to do something with either the actors or directors in the datasets. I landed on exploring whether featuring well-known actors influences audience engagement because I saw this as a practically relevant question for a streaming platform deciding where to allocate its content budget. I defined "star power" as any movie featuring at least one of the top 50 actors ranked by total IMDb votes across their filmography. I identified them through an inner_join() between actors_clean and titles_clean on the shared id column. TMDb popularity was chosen as the outcome variable over IMDb score because it reflects active audience engagement (searches, watchlists, rating activity) rather than critical opinion. A log scale was applied, finplot(log.y = TRUE), for the same reason as earlier.
+
+```{r star-power}
+plot_star_power(titles_clean, actors_clean)
+```
+
+Star cast movies show have a visibly higher median TMDb popularity than non-star cast movies. Thus, it suggests that casting recognisable names will drive audience engagement on any new streaming platform. 
+
+## Conclusions
+
+- Drama and comedy are safe bets globally, but content strategy should be tailored for each region eg. animation drives huge engagement in Japan.
+- History and documentary genres score highest with audiences despite low production volumes so promoting such titles might give a platform a competitive advantage.
+- English-language (GB) and Japanese content gets the highest TMDb engagement scores, these languages should be considered when making global content decisions.
+- Most markets cluster around a 90–110 minute runtime sweet spot so acquiring content within this window will be beneficial in keeping audiences engaged (across all regions).
+- Movies featuring top IMDb-voted actors show measurably higher audience engagement, suggesting that investing in recognisable talent is a worthwhile strategy for building an initial subscriber base.
 
 ---
 

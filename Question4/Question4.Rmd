@@ -1,0 +1,91 @@
+---
+title: "Netflix Content Analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(fmxdat)
+list.files('code/', full.names = T, recursive = T) %>% .[grepl('.R', .)] %>% as.list() %>% walk(~source(.))
+
+# Load the data
+titles <- read_rds("data/Netflix/titles.rds")
+netflix_movies <- read_csv("data/Netflix/Netflix_movies.csv")
+credits <- read_rds("data/Netflix/credits.rds")
+
+# See what we are working with
+glimpse(titles)
+glimpse(netflix_movies)
+glimpse(credits)
+
+
+# Cleaned and joined dataset
+netflix <- clean_netflix("data/Netflix")
+
+titles_clean <- netflix$titles
+actors_clean <- netflix$actors
+```
+
+# Introduction
+
+Data containing title, rating, production country and other relevant variables was used to do analysis regarding the decline in Netflix's share price/number of users.
+
+Three questions are tackled: 
+
+- What types of movies different countries produce
+- How audience engagement varies across countries 
+- How movie length differs by country
+
+These findings are intended to inform content strategy for a new streaming platform.
+
+## Genre Preferences by Country
+
+Drama and comedy seem to be the most popular genre for most countries, but there are definitely differences between countries that are worth noting. For example, Japan stands out for its unusually high share of animation, while India, Nigeria and the Philippines have a high preference for drama and romance with little prefernce for science fiction or documentation content. Thus, content strategy should not be applied at a global level, but rather tailored to the tastes of individual countries.
+
+```{r genre-by-country}
+plot_genre_by_country(titles_clean)
+```
+
+## What Audiences Rate Highest
+
+To understand what content audiences value most, median IMDb scores were computed per genre. Titles can belong to multiple genres, so each title was counted once per genre. History and documentary content have the highest median scores, which suggests that focusing on such niche content could be unique selling point for a new streaming platform.
+
+```{r score-by-genre}
+plot_score_by_genre(titles_clean)
+```
+
+## Audience Engagement by Country
+
+TMDb popularity scores reflect active audience engagement (that being things like searches, watchlists, and ratings activity). This makes them a better proxy for streaming performance than critic scores alone, because they represent the average viewer and those who engage with the content on streaming platforms. Japanese and English-language content (GB, US) drives the highest median engagement globally, while Nigerian and Filipino content (while still relatively popular) remains more locally concentrated.
+
+```{r popularity-by-country}
+plot_popularity_by_country(titles_clean)
+```
+
+## Movie Runtime by Country
+
+Runtime distributions were compared across the top 10 production countries to understand whether movie length preferences vary by market. Each movie is assigned to its primary production country.
+
+```{r runtime-by-country}
+plot_runtime_by_country(titles_clean)
+```
+
+Indian cinema has the longest median runtime by a clear margin, which matches what we know about the famously long format of Bollywood films. The US has the widest spread reflecting its greatly varied runtimes. A sweetspot is revealed though this data as the other countries seemingly cluster around the 90-110 minute mark. This sweetspot should be taken into account when choosing content for the new streaming platform.
+
+## Does Star Power Drive Audience Engagement?
+
+To explore whether featuring well-known actors influences audience engagement, I identified the top 50 actors by total IMDb votes across their filmography and flagged any Netflix movie featuring at least one of them as a "star cast" title. TMDb popularity was then compared between star and non-star movies using a two-group boxplot with a log scale applied given the right skew in popularity scores.
+
+```{r star-power}
+plot_star_power(titles_clean, actors_clean)
+```
+
+Star cast movies show have a visibly higher median TMDb popularity than non-star cast movies. Thus, it suggests that casting recognisable names will drive audience engagement on any new streaming platform. 
+
+# Conclusions
+- Drama and comedy are safe bets globally, but content strategy should be tailored for each region eg. animation drives huge engagement in Japan.
+- History and documentary genres score highest with audiences despite low production volumes so promoting such titles might give a platform a competitive advantage.
+- English-language (GB) and Japanese content gets the highest TMDb engagement scores, these languages should be considered when making global content decisions.
+- Most markets cluster around a 90–110 minute runtime sweet spot so acquiring content within this window will be beneficial in keeping audiences engaged (across all regions).
+- Movies featuring top IMDb-voted actors show measurably higher audience engagement, suggesting that investing in recognisable talent is a worthwhile strategy for building an initial subscriber base.

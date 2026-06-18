@@ -44,32 +44,28 @@ dim(Coffee_long)
 Northern Sumatra is both the highest-rated origin and inexpensive, while Cobán shows a well-rated coffee can be found for under $4. Thus, high rating doesn't require a high price in this data.
 
 ```{r origin-plot}
-g <- origin_cost_scatter(Coffee_long)
-g
+origin_cost_scatter(Coffee_long)
 ```
 
 # Roast Strength
 Light and Medium-Light roasts consistently outscore Medium, Medium-Dark, and especially Dark roasts.
 
 ```{r roast-plot}
-g <- roast_plot(Coffee)
-g
+roast_plot(Coffee)
 ```
 
 # Top Suppliers
 Top-rated suppliers under $20/100g with at least 5 reviews each.
 
 ```{r supplier-plot}
-g <- supplier_plot(Coffee)
-g
+supplier_plot(Coffee)
 ```
 
 # Matching Student Preferences
 Reviews from Yemen, Tarrazu, and Boquete mention student-preferred *flavour* words (chocolate, aroma, savory, toned, sweetly, tart).
 
 ```{r keyword-plot}
-g <- keyword_plot(Coffee_long)
-g
+keyword_plot(Coffee_long)
 ```
 
 # Recommendations
