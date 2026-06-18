@@ -29,43 +29,84 @@ glimpse(HBO_credits)
 BabyNames %>% summarise(across(everything(), ~sum(is.na(.))))
 ```
 
-# Introduction
-- Used US baby name data (1910-2014, by state) alongside Billboard chart history and HBO titles/credits to look at naming trends
-- Goal: test whether name persistence has weakened since the 1990s, and find examples of names spiking due to cultural events (songs, shows, celebrities)
+## Introduction
+ - Used US baby name data (1910-2014, by state) alongside Billboard chart history and HBO titles/credits to look at naming trends
 
-# Naming Persistence Over Time
+## Naming Persistence Over Time
 
-For each year, I took the top 25 boys' and girls' names nationally (summed across states), and compared that ranking to the top 25 from the same sex three years later using Spearman rank correlation (only names appearing in both years are compared).
+For each year, I took the top 25 boys' and girls' names nationally (summed  across states), and compared that ranking to the full national ranking three years later using Spearman rank correlation. Unlike a simple top-25 to top-25 comparison, names that fell out of the top 25 are still scored based on how far they dropped and this gives a truer picture of persistence.
 
-```{r persistence-calc}
+```{r persistence-calc, include=FALSE}
 Years <- BabyNames$Year %>% unique() %>% sort()
 Years <- Years[Years <= max(Years) - 3]
 
-PersistenceResult <-
-    expand_grid(Year = Years, Gender = c("M", "F")) %>%
-    mutate(Corr = map2_dbl(Year, Gender, ~rank_persistence(BabyNames, .x, .y)))
+PersistenceResult <- expand_grid(Year = Years, Gender = c("M", "F")) %>%
+    mutate(Corr = map2_dbl(Year, Gender, ~calc_rank_persistence(BabyNames, .x, .y)))
 ```
 
-```{r persistence-plot}
+```{r persistence-plot, include=FALSE, echo=FALSE}
 g <- persistence_plot(PersistenceResult)
 g
 ```
 
-- Persistence dropped and became more volatile after 1990 (for both sexes)
-- Girls' names persistence started weakening earlier (mid-1950s/60s, not 1990)
-- Boys' names persistence stayed stable until about 1990, then matched the same pattern
-- Persistence is mostly weaker and more volatile since 1990 than in the early decades (for both sexes)
+- Persistence has become noticably more volatile for both sexes since roughly the 1960s
+    - 1990 falls in the middle of this already-volatile period rather than marking its start
+- 1990 is not the clear turning point the agency suspected because girls' names began losing persistence as early as the 1950s/60s (whereafter it experienced a sharp dip), decades before 1990
+- Girls' names show a sharp uptick in the final years of the series 
+  - It's too early in the data to call this a lasting reversal rather than one more swing in an already volatile pattern
+- Implication for the agency: a name's current popularity is now a less reliable predictor of its popularity several years later, so committing early to a single trending name carries more risk than it once did
 
-# Naming Spikes and Cultural Events
+## Naming Surges 
 
-I looked for names with the biggest single-year jump in national popularity, then checked whether anything in the Billboard or HBO data could plausibly explain the spike (e.g. a hit song or popular show character with the same name).
+I looked for names with the biggest single-year jump in national popularity.
 
-```{r find-surges}
+```{r find-surges, include=FALSE}
 NameSurges <- find_name_surges(BabyNames, top_n = 15)
 NameSurges
 ```
 
-[pattern-hunt section - next]
+```{r name surge plot, echo=FALSE}
+g <- surge_plot(BabyNames, top_n = 20)
+g
+```
+ 
+- Several of the biggest male-name surges (Robert, John, James, Richard, Michael)   all happen in exactly the same year (1946) which suggests something bigger was     driving names generally that year, not a separate cause for each one
+    - This is likely due to the post-WW1 baby-boom that occurred
+- Female surges (Linda, Shirley, Ashley) are more spread out across different       years, more consistent with separate, name-specific causes
+    - Shirley's surge coincides with the rise of child actress Shirley Temple, who became one of Hollywood's top stars by 1934 and was the industry's #1 box-office draw from 1935-1938, which is a classic example of a single celebrity driving a national naming trend.
+    - Linda and Ashley most likely follow a similar culturally-driven trend as Shirley
+
+# More Recent Rising Names
+```{r rising names per gender plots, echo=FALSE}
+g <- plot_rising_names(BabyNames, gender_input = "F", from_year = 2005, to_year = 2014, top_n = 5)
+g
+
+g <- plot_rising_names(BabyNames, gender_input = "M", from_year = 2005, to_year = 2014, top_n = 5)
+g
+
+```
+
+- 2005 to 2014's fastest-rising names (Sophia, Harper, Liam, Mason, etc.) show       steady multi-year growth rather than a single sharp spike
+- Daleyza stands out as a name with zero history before 2012, then immediate growth   (a different pattern from names simply gaining popularity over time)
+  - Interestingly, a quick google search attributes this rise in the name to the Mexican-American singer (Larry Hernandez) naming his daughter in 2010
+
+## Conclusions for the Agency
+
+- Persistence has become less predictable since the 1960s, not specifically since 1990 as suspected by the agency. 
+    - Both boys' and girls' rankings show clear volatility decades before 1990, so the 1990s aren't a clean turning point, but the bigger instinct (that recent name trends are less stable than older ones) holds for the second half of the dataset.
+- A practical implication for toy naming is that a name sitting in the top 25 today is a weaker guarantee of future popularity than it would have been pre-1960s so betting heavily on one trending name for a toy line carries more risk now than in earlier decades.
+- Large naming surges have two driving forces, and they require different responses by the agency:
+    - Population-wide events (e.g. the 1946 male-name cluster, likely tied to the post-WWII baby boom) lift already-popular names rather than creating new fashionable ones - not useful for spotting a "next big name," since nothing new is actually trending
+    - Culturally-driven, name-specific spikes (Shirley Temple, Whitney Houston and also likely Daleyza/Larry Hernandez) are the ones actually worth watching. 
+    - These show a single celebrity, character, or cultural moment can cause a name to gain popularity fast. 
+        - This is clearly the the driver that the agency should pay attention to for toy naming purposes
+- The agency should also watch out for zero-history to sudden spike names like Daleyza as this could hint to a name suddenly gaining popularity. 
+- Overall, in recent years names have not been as persistent and so toy companies' should maybe shy away from relying too much on such data.
+- Caveat: this analysis focused on the baby-names data itself; a deeper dive cross-referencing HBO character names and Billboard artists/songs against naming spikes (as outlined in the brief) was not completed in this ietration due to time constraints
+
+
+
+
 
 
 

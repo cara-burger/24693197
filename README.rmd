@@ -6,10 +6,7 @@ output:
 
 # Purpose
 
-This folder contains my solutions to the Data Science for Economics and Finance 
-Practical Exam. Each question is contained in its own subfolder, with functions 
-stored in the respective `code/` folders and data stored in the respective 
-`data/` folders (gitignored).
+This folder contains my solutions to the Data Science for Economics and Finance Practical Exam. Each question is contained in its own subfolder, with functions stored in the respective `code/` folders and data stored in the respective `data/` folders (gitignored).
 
 ---
 
@@ -102,18 +99,118 @@ g
 
 ## Approach
 
-Brief description of approach.
+This question asked for the analysis of US baby naming trends (1910-2014) for a toy design agency.The agency propositioned this in order to understand what drives naming trends and how long they persist, to inform toy character naming decisions.
 
-## Figure 1
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+list.files('Question2/code/', full.names = T, recursive = T) %>%
+    .[grepl('.R', .)] %>%
+    as.list() %>%
+    walk(~source(.))
+
+BabyNames <- read_rds("Question2/data/US_Baby_names/Baby_Names_By_US_State.rds")
+Billboard <- read_rds("Question2/data/US_Baby_names/charts.rds")
+HBO_titles <- read_rds("Question2/data/US_Baby_names/HBO_titles.rds")
+HBO_credits <- read_rds("Question2/data/US_Baby_names/HBO_credits.rds")
+```
+
+```{r inspect, include=FALSE}
+#Have a look at each dataset to see what I am working with
+glimpse(BabyNames)
+glimpse(Billboard)
+glimpse(HBO_titles)
+glimpse(HBO_credits)
+
+# Check for NA values
+BabyNames %>% summarise(across(everything(), ~sum(is.na(.))))
+```
 
 
-Interpretation.
+# Naming Persistence Over Time
 
+`calc_rank_persistence()` takes the top 25 names for a given year and sex, then looks up each of those names in the full national ranking three years later - however far down they may have fallen. This is better than comparing two top-25 lists directly, because names that dropped out of the top 25 still get penalised rather than being silently excluded. `persistence_plot()` then plots the resulting Spearman correlation for every 
+year from 1910 to 2011, separately for boys and girls.
 
-## Figure 2
+```{r persistence-calc and plot}
+Years <- BabyNames$Year %>% unique() %>% sort()
+Years <- Years[Years <= max(Years) - 3]
 
+PersistenceResult <-
+    expand_grid(Year = Years, Gender = c("M", "F")) %>%
+    mutate(Corr = map2_dbl(Year, Gender, ~calc_rank_persistence(BabyNames, .x, .y)))
 
-Interpretation.
+g <- persistence_plot(PersistenceResult)
+g
+```
+
+- Persistence dropped and became more volatile after 1990 (for both sexes)
+- Girls' names persistence started weakening earlier (mid-1950s/60s, not 1990)
+- Boys' names persistence stayed stable until about 1990, then matched the same pattern
+- Persistence is mostly weaker and more volatile since 1990 than in the early decades (for both sexes)
+
+# Naming Surges and Cultural Events
+
+The brief's tip was to look for year-on-year surges and dig into what might explain them, with Whitney in the 1980s given as the model example. So I built `find_name_surges()` to find the biggest single-year jumps in national popularity.
+
+```{r find-surges}
+NameSurges <- find_name_surges(BabyNames, top_n = 15)
+NameSurges
+```
+
+- Several biggest male surges (Robert, John, James, Richard, Michael) all
+  happen in 1946, suggesting a shared cause rather than separate ones
+    - Likely the post-WWII baby boom, which raised total births that year
+- Female surges (Linda, Shirley, Ashley) are more spread out, suggesting
+  separate, name-specific causes
+    - Shirley likely tracks child star Shirley Temple's rise in the 1930s
+    - Linda and Ashley probably follow similar celebrity-driven trends,
+      though not individually verified
+
+## More Recent Rising Names
+
+To zoom into the most recent decade of data, I plotted the names with the biggest average rise in popularity between 2005 and 2014, separately for girls and boys, using my existing `plot_rising_names()` function. Rather than just listing the names with a single surge year, this shows their actual year-by-year counts as lines so it's possible to see each name rose, not just that it rose.
+
+# More Recent Rising Names
+```{r rising names per gender plots, echo=FALSE}
+g <- plot_rising_names(BabyNames, gender_input = "F", from_year = 2005, to_year = 2014, top_n = 5)
+g
+
+g <- plot_rising_names(BabyNames, gender_input = "M", from_year = 2005, to_year = 2014, top_n = 5)
+g
+
+```
+
+- 2005 to 2014's fastest-rising names (Sophia, Harper, Liam, Mason, etc.) show       steady multi-year growth rather than a single sharp spike
+- Daleyza stands out as a name with zero history before 2012, then immediate growth   (a different pattern from names simply gaining popularity over time)
+  - Interestingly, a quick google search attributes this rise in the name to the Mexican-American singer (Larry Hernandez) naming his daughter in 2010
+
+One name in this list genuinely surprised me was **Daleyza**. I'd never even heard this name before, and it doesn't follow the same pattern as most of the other surges on the list because there's basically zero history before it suddenly shows up, rather than slowly building up like a normal "rising" name. That jump from nowhere is what had me running to google and it turns out Mexican-American singer Larry Hernandez named his daughter Daleyza in 2010, which seems to line up with the name appearing out of nowhere shortly after. He also had a reality show called LarryMania - the more you know...
+
+This prompted me to check it out:
+
+```{r}
+Daleyza_by_state <- BabyNames %>% filter(Name == "Daleyza") %>%
+    group_by(State) %>% summarise(Total = sum(Count)) %>% arrange(desc(Total))
+
+Daleyza_by_state
+```
+
+And suprise, suprise! Daleyza's spike is heavily concentrated in California and Texas, with Arizona, Illinois, and Colorado following behind them. This matches the Larry Hernandez explanation because many Mexican-Americans live in thse states (but they are also just some of the most densely populated states in the U.S.)
+
+## Conclusions
+- Persistence has become less predictable since the 1960s, not specifically since 1990 as suspected by the agency. 
+    - Both boys' and girls' rankings show clear volatility decades before 1990, so the 1990s aren't a clean turning point, but the bigger instinct (that recent name trends are less stable than older ones) holds for the second half of the dataset.
+- A practical implication for toy naming is that a name sitting in the top 25 today is a weaker guarantee of future popularity than it would have been pre-1960s so betting heavily on one trending name for a toy line carries more risk now than in earlier decades.
+- Large naming surges have two driving forces, and they require different responses by the agency:
+    - Population-wide events (e.g. the 1946 male-name cluster, likely tied to the post-WWII baby boom) lift already-popular names rather than creating new fashionable ones - not useful for spotting a "next big name," since nothing new is actually trending
+    - Culturally-driven, name-specific spikes (Shirley Temple, Whitney Houston and also likely Daleyza/Larry Hernandez) are the ones actually worth watching. 
+    - These show a single celebrity, character, or cultural moment can cause a name to gain popularity fast. 
+        - This is clearly the the driver that the agency should pay attention to for toy naming purposes
+- The agency should also watch out for zero-history to sudden spike names like Daleyza as this could hint to a name suddenly gaining popularity. 
+- Overall, in recent years names have not been as persistent and so toy companies' should maybe shy away from relying too much on such data.
+- Caveat: this analysis focused on the baby-names data itself; a deeper dive cross-referencing HBO character names and Billboard artists/songs against naming spikes (as outlined in the brief) was not completed in this ietration due to time constraints
+
 
 ---
 
