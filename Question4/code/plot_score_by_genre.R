@@ -22,7 +22,7 @@ plot_score_by_genre <- function(titles_clean) {
         geom_col(show.legend = FALSE, alpha = 0.85) +
         coord_flip() +
         labs(title = "Median IMDB Score by Genre", x = NULL, y = "Median IMDB Score") +
-        theme_fmx(title.size = ggpts(16), subtitle.size = ggpts(12)) +
+        fmxdat::theme_fmx(title.size = fmxdat::ggpts(16), subtitle.size = fmxdat::ggpts(12)) +
         theme(legend.position = "none")
 
    fmxdat::finplot(g)

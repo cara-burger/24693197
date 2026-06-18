@@ -18,7 +18,7 @@ A coffee entrepreneur wants to know which origin, roast strength, and supplier t
 
 I approached this by building one function per plot, namely origin vs cost, roast strength, top suppliers, and a keyword-match check against the student survey wordcloud. I cleaned the data first (checked for missing values and tidied a few wide-format columns into long form), then built each plot to answer one specific part of the brief rather than trying to cram everything into a single chart.
 
-```{r q1 setup}
+```{r q1 setup, include=FALSE}
 library(tidyverse)
 
 list.files('Question1/code/', full.names = T, recursive = T) %>%
@@ -43,7 +43,11 @@ Coffee_long <- Coffee %>%
     gather(desc_rank, desc, desc_1, desc_2, desc_3) %>%
     filter(!is.na(desc))  # two coffees are missing a third review so those rows are dropped
 
-# Chiriquí was splitting into 2 rows under different spellings, messing up the "best rated" label - fixed here so it applies to all the origin plots
+# roaster has some near-duplicate spellings (accents/apostrophes)
+# I checked whether splits affected top 10 supplier plot results and confirmed they do not, so left as is
+Coffee %>% pull(roaster) %>% unique() %>% sort()
+
+# Chiriquí was splitting into 2 rows under different spellings, messing up the "best rated" label so I fixed here so it applies to all the origin plots
 Coffee_long <- Coffee_long %>%
     mutate(origin = gsub(" Growing Region| Growing District| District| Department| County| Province| Zone| Region", "", origin)) %>%
     mutate(origin = gsub("í", "i", origin))
@@ -51,11 +55,11 @@ Coffee_long <- Coffee_long %>%
 
 ### Origin vs cost
 
-I plotted cost against rating to see if price actually tracks quality — bubble size shows review count, so a region's position isn't trusted equally regardless of how many reviews back it up.
+I plotted cost against rating to see if price actually tracks quality. Bubble size shows review count, so a region's position isn't trusted equally regardless of how many reviews back it up.
 
-Northern Sumatra is both the highest-rated origin and inexpensive, while Cobán shows a well-rated coffee can be found for under $4 — high rating doesn't require a high price here.
+Northern Sumatra is both the highest-rated origin and inexpensive and Cobán shows a well-rated coffee can be found for under $4 (high rating doesn't require a high price here).
 
-```{r}
+```{r, echo=FALSE}
 origin_cost_scatter(Coffee_long)
 ```
 
@@ -65,27 +69,27 @@ A boxplot with individual reviews jittered on top shows both the typical rating 
 
 Light and Medium-Light roasts consistently outscore Medium, Medium-Dark, and especially Dark roasts. 
 
-```{r}
+```{r, echo=FALSE}
 roast_plot(Coffee)
 ```
 
 ### Top suppliers
 
-Ranked suppliers by rating directly, since that's the simplest way to answer "who should she buy from". I filtered to a review-count minimum so high ratings (with a low number of them) don't dominate, and a cost ceiling so the list stays realistic for a student-shop having to compete with places like MyVrew which sell relatively cheap coffee.
+Ranked suppliers by rating directly, since that's the simplest way to answer "who should she buy from". I filtered to a review-count minimum so high ratings (with a low number of them) don't dominate. I also added a cost ceiling so the list stays realistic for a coffee shop in the Neelsie (staff and student target audience) having to compete with places like MyBrew which sell relatively cheap coffee.
 
 Top-rated suppliers under $20/100g with at least 5 reviews each.
 
-```{r}
+```{r, echo=FALSE}
 supplier_plot(Coffee)
 ```
 
 ### Matching student preferences
 
-The brief gave a wordcloud of words Stellenbosch students used to describe coffee they liked. I picked the words that stood out most and checked which origins' reviews mention them the most.
+The brief gave a wordcloud of words Stellenbosch students used to describe coffee they liked. I picked the words that stood out most from the wordcloud (chocolate, aroma, savory, toned, sweetly, tart) and used grepl() to check which origins' reviews mention them most frequently. I filtered to origins with at least 20 reviews so one good review review couldn't skew the result, and plotted the top 10 as a share of total reviews mentioning at least one of the keywords.
 
 Reviews from Yemen, Tarrazu, and Boquete mention student-preferred flavour words (chocolate, aroma, savory, toned, sweetly, tart) most often.
 
-```{r}
+```{r, echo=FALSE}
 keyword_plot(Coffee_long)
 ```
 
@@ -170,8 +174,6 @@ plot_rising_names(BabyNames, gender_input = "F", from_year = 2005, to_year = 201
 
 
 plot_rising_names(BabyNames, gender_input = "M", from_year = 2005, to_year = 2014, top_n = 5)
-
-
 ```
 
 - 2005 to 2014's fastest-rising names (Sophia, Harper, Liam, Mason, etc.) show       steady multi-year growth rather than a single sharp spike
@@ -297,7 +299,8 @@ I unfortunately spent too long tweaking the Texevier YAML template for Question 
 
 ## Data Loading and Setup
 
-```{r q4 setup}
+```{r q4 setup, include=FALSE}
+library(fmxdat)
 list.files('Question4/code/', full.names = T, recursive = T) %>%
     .[grepl('.R', .)] %>% as.list() %>% walk(~source(.))
 
@@ -324,7 +327,7 @@ Since all figures rely on titles and credits, the cleaning focuses on those two.
 
 To identify what types of movies (genre) different countries produce, I used grepl() to see genre membership per title and map_dfr() to stack results into a long dataframe. The top 10 countries by movie count were selected via count() and slice_head(), with each movie assigned to its primary production country for faceting purposes.
 
-```{r genre-by-country}
+```{r genre-by-country, echo=FALSE}
 plot_genre_by_country(titles_clean)
 ```
 
@@ -334,7 +337,7 @@ Drama and comedy seem to be the most popular genre for most countries, but there
 
 To understand what content audiences rate most highly, I computed the median IMDb score per genre using the same grepl() and map_dfr() pattern as before. Note that IMDb scores are global and not Netflix-specific so they should be read as a general quality signal rather than a platform performance measure.
 
-```{r score-by-genre}
+```{r score-by-genre, echo=FALSE}
 plot_score_by_genre(titles_clean)
 ```
 
@@ -344,7 +347,7 @@ History and documentary content have the highest median scores, which suggests t
 
 TMDb popularity scores reflect active audience engagement (that being things like searches, watchlists, and rating activity)making them a better proxy for streaming performance than critic scores alone. Given heavy right skew in the distribution (median of about 6, max  of about 1823), a log scale was applied in finplot(log.y = TRUE).I noticed this after first plotting without the log scale and the results looking not so nice.
 
-```{r popularity-by-country}
+```{r popularity-by-country, echo=FALSE}
 plot_popularity_by_country(titles_clean)
 ```
 
@@ -354,7 +357,7 @@ Japanese and English-language content (GB, US) drives the highest median engagem
 
 I compared runtime distributions across the top 10 production countries using a boxplot with jitter overlay, to address the brief's requirement of looking at the runtimes. Each movie is assigned to its primary (first-listed) production country for grouping purposes. This is a deliberate simplification documented here as co-productions are counted under their lead country only. The fct_reorder() function orders countries by median runtime so the plot reads cleanly from shortest to longest.
 
-```{r runtime-by-country}
+```{r runtime-by-country, echo=FALSE}
 plot_runtime_by_country(titles_clean)
 ```
 
@@ -364,7 +367,7 @@ Indian cinema has the longest median runtime by a clear margin, which matches wh
 
 When I read the question for the first time, my curiosity was definitely piqued and I immediately knew I wanted to do something with either the actors or directors in the datasets. I landed on exploring whether featuring well-known actors influences audience engagement because I saw this as a practically relevant question for a streaming platform deciding where to allocate its content budget. I defined "star power" as any movie featuring at least one of the top 50 actors ranked by total IMDb votes across their filmography. I identified them through an inner_join() between actors_clean and titles_clean on the shared id column. TMDb popularity was chosen as the outcome variable over IMDb score because it reflects active audience engagement (searches, watchlists, rating activity) rather than critical opinion. A log scale was applied, finplot(log.y = TRUE), for the same reason as earlier.
 
-```{r star-power}
+```{r star-power, echo=FALSE}
 plot_star_power(titles_clean, actors_clean)
 ```
 

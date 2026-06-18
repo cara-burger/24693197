@@ -1,4 +1,4 @@
-homeowner_empoyment_plot <- function(df){
+homeowner_employment_plot <- function(df){
 
     plot_df <- df %>% filter(!is.na(Default_Flag), !is.na(home_ownership), !is.na(emp_length_num)) %>%
         filter(term == 36) %>%

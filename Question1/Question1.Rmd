@@ -23,12 +23,11 @@ Coffee_long <- Coffee %>%
     gather(desc_rank, desc, desc_1, desc_2, desc_3) %>%
     filter(!is.na(desc))  # two coffees are missing a third review so those rows are dropped
 
-# roaster has some near-duplicate spellings (accents/apostrophes), I checked whether
-# splits affected top 10 supplier plot results and confirmed they do not, so left as is
+# roaster has some near-duplicate spellings (accents/apostrophes)
+# I checked whether splits affected top 10 supplier plot results and confirmed they do not, so left as is
 Coffee %>% pull(roaster) %>% unique() %>% sort()
 
-# Ran unique() %>% sort() on origin columns and found near-duplicates caused by
-# inconsistent geographic suffixes and accented characters - fixed below
+# Chiriquí was splitting into 2 rows under different spellings, messing up the "best rated" label so I fixed here so it applies to all the origin plots
 Coffee_long <- Coffee_long %>%
     mutate(origin = gsub("Growing Region|Growing District|District|Department|County|Province|Zone|Region", "", origin),
            origin = gsub("í", "i", origin),
@@ -46,28 +45,28 @@ dim(Coffee_long)
 # Origin vs. Cost Scatter
 Northern Sumatra is both the highest-rated origin and inexpensive, while Cobán shows a well-rated coffee can be found for under $4. Thus, high rating doesn't require a high price in this data.
 
-```{r origin-plot}
+```{r origin-plot, echo=FALSE}
 origin_cost_scatter(Coffee_long)
 ```
 
 # Roast Strength
 Light and Medium-Light roasts consistently outscore Medium, Medium-Dark, and especially Dark roasts.
 
-```{r roast-plot}
+```{r roast-plot, echo=FALSE}
 roast_plot(Coffee)
 ```
 
 # Top Suppliers
 Top-rated suppliers under $20/100g with at least 5 reviews each.
 
-```{r supplier-plot}
+```{r supplier-plot, echo=FALSE}
 supplier_plot(Coffee)
 ```
 
 # Matching Student Preferences
 Reviews from Yemen, Tarrazu, and Boquete mention student-preferred *flavour* words (chocolate, aroma, savory, toned, sweetly, tart).
 
-```{r keyword-plot}
+```{r keyword-plot, echo=FALSE}
 keyword_plot(Coffee_long)
 ```
 
