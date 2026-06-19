@@ -276,12 +276,15 @@ Multivariate GARCH \sep Kalman Filter \sep Copula \\
 \section{\texorpdfstring{Introduction
 \label{Introduction}}{Introduction }}\label{introduction}
 
-This report analyses loan default trends using Lending Club data
-covering one million anonymised peer-to-peer loans. The analysis
-addresses the key questions posed by the Director of the Credit
-Institute in Texas, including identifying default risk drivers,
-evaluating the grading system, recommending a DTI hard-cap, and testing
-four institutional heuristics against the data.
+This report looks at loan default trends using Lending Club data
+covering one million anonymised peer-to-peer loans. It looks at the
+beliefs the Director wishes to challenge. Namely, that home owners and
+people that's been employed more than 10 years have a far lower
+probability of default with short term loans, that US States differ
+significantly when it comes to a culture of defaulting on short term
+loans and that Credit Grades (A - F) provide a great indicator for
+whether younger individuals will default or not. Also that interest
+rates are also clearly determined by age, occupation and credit scores.
 
 \section*{Data}\label{data}
 \addcontentsline{toc}{section}{Data}
@@ -294,14 +297,10 @@ this analysis and several cleaning steps were applied.
 
 \begin{itemize}
 \item
-  Two binary outcome variables were created from \texttt{loan\_status}.
-  \texttt{Default\_Flag} takes the value 1 for loans charged off or
-  defaulted, 0 for fully paid, and NA for current loans. These are
-  excluded from default rate calculations as their outcome is not yet
-  known. \texttt{Collections\_Flag} is derived from
-  \texttt{collections\_12\_mths\_ex\_med} and flags borrowers who have
-  missed payments but have not yet fully defaulted, consistent with the
-  director's definition of partial default.
+  Two binary outcome variables were created from loan\_status.
+  Default\_Flag takes the value 1 for loans charged off or defaulted, 0
+  for fully paid, and NA for current loans. These are excluded from
+  default rate calculations as their outcome is not yet known.
 \item
   Employment length and loan term were stored as text (``6 years'', ``36
   months'') and converted to numeric for analysis.
@@ -309,18 +308,21 @@ this analysis and several cleaning steps were applied.
   Credit grade was set as an ordered factor from A (lowest risk) to G
   (highest risk).
 \item
-  The dataset contains no direct age variable so Credit history length,
-  derived from \texttt{earliest\_cr\_line}, is used as a proxy since a
-  longer history is likely linked to an older borrower.
+  Credit history length is used a s a proxy for age since there is no
+  direct age variable in the dataset. It is derived from
+  earliest\_cr\_line and it is used as a proxy since a longer history is
+  likely linked to an older borrower.
 \item
-  Continuous variables used in the analysis were Winsorized at the 1st
-  and 99th percentiles to prevent extreme values from distorting
+  Continuous variables with clear outliers were Winsorized at the 1st
+  and 99th percentiles. DTI had impossible values ranging from -1 to
+  999, and annual income reached as high as \$9.9 million so both
+  required capping to prevent extreme values from distorting the
   results.
 \end{itemize}
 
 \subsection{Key Risk Drivers}\label{key-risk-drivers}
 
-\subsection{Default Rate by Credit
+\subsubsection{Default Rate by Credit
 Grade}\label{default-rate-by-credit-grade}
 
 \pandocbounded{\includegraphics[keepaspectratio,alt={Default rates rise monotonically from Grade A to G, confirming the grading system captures genuine credit risk.}]{Question3_files/Question3_files/figure-latex/plot-grade-1.pdf}}
@@ -374,8 +376,8 @@ This belief is more closely supported by the data because default rates
 range from around \(14%
 \) to about \(27%/28%
 \). This means that US states do in fact differ significantly in default
-culture. Texas sits close to the average when looking at the bigger
-picture.
+culture. Texas (labeled TX on the x-axis) sits slightly above the the
+average when looking at the bigger picture.
 
 \subsubsection{Belief: Credit Grades (A - F) Predict Whether Younger
 Individuals Will Default
@@ -403,10 +405,33 @@ determinant of interest rates. From the basic understanding of interest
 rates and credit ratings, this correlation makes sense, because a lower
 credit rating means there is a higher risk of default. Thus, the risk is
 compensated for by a higher interest rate (compared to higher credit
-ratings). The dataset does not have any specific age or occupation data
-so it would be difficult to draw conculsions about those factors.
+ratings).
 
 \section{Conclusion}\label{conclusion}
+
+This report analysed one million Lending Club loans to assess default
+risk drivers and evaluate four beliefs held by the Credit Institute in
+Texas.
+
+Credit grade is the strongest predictor of default, with a clear and
+consistent relationship between grade and default rate. Loan purpose
+also carries meaningful risk signal car and home improvement loans have
+the lowest default rates while small business and wedding loans sit at
+the top.
+
+The evidence on the four beliefs of the Institute is relatively mixed.
+The homeownership and length of employment belief is only partially
+supported because borrowers with 10 or more years of employment default
+slightly less, but the difference is small. The belief that US states
+differ in default culture is supported, with default rates ranging from
+around 14\% to 27\% across states and Texas sits close to the national
+average. Credit grades predict default consistently for both younger and
+older borrowers with very small differences between the two groups.
+There is no evidence that grades work better or worse for younger
+individuals specifically. Finally, credit grade is clearly the dominant
+driver of interest rates, but the independent roles of age and
+occupation cannot be assessed as neither variable is directly available
+in the dataset.
 
 \newpage
 

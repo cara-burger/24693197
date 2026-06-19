@@ -3,8 +3,8 @@ clean_loans <- function(df){
                               verification_status, addr_state, dti, pub_rec, revol_util, purpose,
                               earliest_cr_line) %>%
         # Create outcome variable with cases being 1 = defaulted, 0 = fully paid, NA = unresolved
-        mutate(Default_Flag = case_when(loan_status == "Fully Paid" ~ 0,
-                                        loan_status %in% c("Charged Off", "Default") ~ 1, TRUE ~ NA_real_)) %>%
+        mutate(Default_Flag = ifelse(loan_status == "Fully Paid", 0,
+                                     ifelse(loan_status %in% c("Charged Off", "Default"), 1, NA_real_))) %>%
         # Strip text from term and emp_length, leaving just the number
         mutate(term = as.numeric(gsub(" months", "", term)), emp_length_num = as.numeric(gsub("[^0-9]", "", emp_length))) %>%
         # Grade has a natural order (A = safest, G = riskiest)  so set set it explicitly

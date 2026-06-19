@@ -5,8 +5,8 @@ origin_cost_scatter <- function(df, min_reviews = 10){
                   n_reviews  = n()) %>% filter(n_reviews >= min_reviews)
 
     # Label the best-rated and cheapest origins
-    best_df  <- plot_df %>% filter(med_rating == max(med_rating)) %>% slice(1)
-    cheap_df <- plot_df %>% filter(med_cost == min(med_cost)) %>% slice(1)
+    best_df  <- plot_df %>% filter(med_rating == max(med_rating)) %>% head(1)
+    cheap_df <- plot_df %>% filter(med_cost == min(med_cost)) %>% head(1)
 
     g <- plot_df %>%
         ggplot() +

@@ -1,9 +1,10 @@
 # Purpose
 
 This folder contains my solutions to the Data Science for Economics and
-Finance Practical Exam. Each question is contained in its own subfolder,
-with functions stored in the respective `code/` folders and data stored
-in the respective `data/` folders (gitignored).
+Finance Practical Exam. Each question is contained in its own subfolder
+with it’s own respective .Rproj, with functions stored in the respective
+code folders and data stored in the respective data folders (which is
+gitignored).
 
 ------------------------------------------------------------------------
 
@@ -246,7 +247,42 @@ And suprise, suprise! Daleyza’s spike is heavily concentrated in
 California and Texas, with Arizona, Illinois, and Colorado following
 behind them. This matches the Larry Hernandez explanation because many
 Mexican-Americans live in thse states (but they are also just some of
-the most densely populated states in the U.S.)
+the most densely populated states in the U.S.). It is, however,
+important to note that 505 Daleyza’s is not that many in the bigger
+scheme of things, but the rise in the name can still most likely be
+attributed to Larry Hernandez’s duaghter.
+
+## Billboard naming trends
+
+On the questions’s Whitney Houston example, I checked whether
+chart-topping artists’ names actually correspond to baby naming surges.
+I built billboard_bubble_plot() to plot each year’s top Billboard #1
+artist first names against how many babies were given that name that
+year (bubble size = count). In the spirit of the Whitney example, I
+wanted to compare the 2000-2014 and 1980-1989 windows.
+
+![](README_files/figure-markdown_github/billboard-bubble-1.png)![](README_files/figure-markdown_github/billboard-bubble-2.png)
+
+- Some names (Taylor in 2013, Justin in 2006, Christina/Jennifer in 2002
+  and 2003) show large bubbles that line up with their chart-topping
+  years.
+- Other large bubbles (Daniel, Michael, Mary) reflect names that were
+  already extremely common regardless of any Billboard connection so
+  from this plot it is difficult to distinguish which name surges are
+  linked to the artists and which are genuinely common/popular names.
+- Many chart-topping first names (Usher, Kanye, Adele, Bruno, Queen)
+  appear as small dots, suggesting chart dominance alone doesn’t
+  reliably predict baby naming impact.
+- The 1980s to the 2000s windows do not have very different patterns
+  because both decades have a mix of big bubbles that belong to already
+  common names and small bubbles of names that did not stick
+  - this data doesn’t provide strong evidence that naming impact from
+    celebrities has weakened (or strengthened) over time.
+
+I also explored using the HBO titles/credits data for a similar
+analysis, but the character name column contained corrupted characters
+that broke standard string functions, so I stuck with Billboard for this
+section given time constraints.
 
 ## Conclusions
 
@@ -277,11 +313,7 @@ the most densely populated states in the U.S.)
   names like Daleyza as this could hint to a name suddenly gaining
   popularity.
 - Overall, in recent years names have not been as persistent and so toy
-  companies’ should maybe shy away from relying too much on such data.
-- Caveat: this analysis focused on the baby-names data itself; a deeper
-  dive cross-referencing HBO character names and Billboard artists/songs
-  against naming spikes (as outlined in the brief) was not completed in
-  this ietration due to time constraints
+  companies’ should shy away from relying too much on such data.
 
 ------------------------------------------------------------------------
 
@@ -385,35 +417,54 @@ that grades work better or worse for younger borrowers specifically.
 The fourth belief was that interest rates are determined by age,
 occupation and credit scores. Due to time constraints, I focused on
 credit grade as a proxy for credit score and plotted the median interest
-rate per grade. I will come back to this if I have the time - possible
-to plot age (as proxied by credit history) against median interest
-rates.
+rate per grade.
 
 ![](README_files/figure-markdown_github/int-rate-1.png)
-
-I wanted to use the credit history length as a proxy for age here again,
-but I got stuck and am cautious of the time. I will return to this if I
-have time left.
 
 From this graph it is obvious that credit rating is an obvious
 determinant of interest rates. From the basic understanding of interest
 rates and credit ratings, this correlation makes sense, because a lower
 credit rating means there is a higher risk of default. Thus, the risk is
 compensated for by a higher interest rate (compared to higher credit
-ratings). The dataset does not have any specific age or occupation data
-so it would be difficult to draw conculsions about those factors.
+ratings).
+
+I focused on credit grade as the main proxy for credit score, but
+managed to extend this to check whether age (with credit history length
+as proxy, as in the previous belief) has an independent effect.
+
+![](README_files/figure-markdown_github/plot-int-rate-age-1.png)
+
+Shorter-history borrowers pay slightly higher median interest rates than
+longer-history borrowers at most grades. This makes logical sense, since
+a shorter credit history probably gives lenders less default risk
+information besides the credit grade itself, so a small risk premium
+gets added (in the form of higher interest rates).
+
+Occupation data does exist as emp_title, but there are over 200 000
+different job titles typed in as free text, so it would need a lot of
+work to clean and group before it’s actually useable. I didn’t have time
+for that.
 
 ## A note on knitting
 
 I unfortunately spent too long tweaking the Texevier YAML template for
-Question 3 and broke it (sorry) in the process. I get a LaTeX error
-which I will troubleshoot if I have time. The analysis and all functions
-run correctly in RStudio, the PDF just would not compile in time. The
-full write-up lives in `Question3/Question3.Rmd` if needed.
+Question 3 and broke it (sorry) in the process. I get a LaTeX (pandoc)
+error which I will troubleshoot if I have time. The analysis and all
+functions run correctly in RStudio, the PDF just would not compile in
+time. The full write-up can be found in Question3/Question3.Rmd if
+needed. Update: I created a new Question3_1.rmd file that knots to pdf
+but I will keep my texevier file as evidence of my process.
 
 ## A note on the graphs inconsistency
 
-## Note that question 3 uses the ggplot2::theme_bw(), while all other questions use fmxdat::theme_fmx with finplot() for formatting. This is because I struggled to get the theme_fmx to work here, I am still unsure why but I think it has something to do with me essentially breaking the Texevier template. I aimed for consistency in this question, but the graphs are now not consistent with the rest of the prac.
+Note that question 3 uses the ggplot2::theme_bw(), while all other
+questions use fmxdat::theme_fmx with finplot() for formatting. This is
+because I struggled to get the theme_fmx to work here, I am still unsure
+why but I think it has something to do with me breaking the Texevier
+template. I aimed for consistency in this question, but the graphs are
+now not consistent with the rest of the prac.
+
+------------------------------------------------------------------------
 
 # Question 4: Netflix
 

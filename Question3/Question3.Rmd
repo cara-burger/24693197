@@ -138,13 +138,13 @@ This report looks at loan default trends using Lending Club data covering one mi
 
 Before any analysis, the data was reduced to the columns relevant to this analysis and several cleaning steps were applied.
 
-- Two binary outcome variables were created from `loan_status`. `Default_Flag` takes the value 1 for loans charged off or defaulted, 0 for fully paid, and NA for current loans. These are excluded from default rate calculations as their outcome is not yet known. `Collections_Flag` is derived from `collections_12_mths_ex_med` and flags borrowers who have missed payments but have not yet fully defaulted, consistent with the director's definition of partial default.
+- Two binary outcome variables were created from loan_status. Default_Flag takes the value 1 for loans charged off or defaulted, 0 for fully paid, and NA for current loans. These are excluded from default rate calculations as their outcome is not yet known. 
 
-- Employment length and loan term  were stored as text ("6 years", "36 months") and converted to numeric for analysis.
+- Employment length and loan term were stored as text ("6 years", "36 months") and converted to numeric for analysis.
 
 - Credit grade was set as an ordered factor from A (lowest risk) to G (highest risk).
 
-- Credit history length is used a s a proxy for age since there is no direct age variable in the dataset. It is derived from `earliest_cr_line` and it is used as a proxy since a longer history is likely linked to an older borrower.
+- Credit history length is used a s a proxy for age since there is no direct age variable in the dataset. It is derived from earliest_cr_line and it is used as a proxy since a longer history is likely linked to an older borrower.
 
 - Continuous variables with clear outliers were Winsorized at the 1st and 99th percentiles. DTI had impossible values ranging from -1 to 999, and annual income reached as high as $9.9 million so both required capping to prevent extreme values from distorting the results.
 
@@ -201,12 +201,9 @@ From this graph it is obvious that credit rating is an obvious determinant of in
 
 # Conclusion
 
-This report analysed one million Lending Club loans to assess default risk drivers and evaluate four beliefs held by the Credit Institute in Texas.
+Credit grade is one of the strongest predictors of default since there is a clear relationship (accross many of the plots) between grade and default rate. Loan purpose could also act as an alternative risk signal since car and home improvement loans have the lowest default rates while small business and wedding loans have the highest.
 
-Credit grade is the strongest predictor of default, with a clear and consistent relationship between grade and default rate. Loan purpose also carries meaningful 
-risk signal car and home improvement loans have the lowest default rates while small business and wedding loans sit at the top.
-
-The evidence on the four beliefs of the Institute is relatively mixed. The homeownership and length of employment belief is only partially supported because borrowers with 10 or more years of employment default slightly less, but the difference is small. The belief that US states differ in default culture is supported, with default rates ranging from around 14% to 27% across states and Texas sits close to the national average. Credit grades predict default consistently for both younger and older borrowers with very small differences between the two groups. There is no evidence that grades work better or worse for younger individuals specifically. Finally, credit grade is clearly the dominant driver of interest rates, but the independent roles of age and occupation cannot be assessed as neither variable is directly available in the dataset.
+The evidence on the four beliefs of the Institute is relatively mixed. The homeownership and length of employment belief is only partially supported because borrowers with 10 or more years of employment default slightly less, but the difference is small. The belief that US states differ in default culture is supported, with default rates ranging from around 14% to 27% across states and Texas sits close to the national average. Credit grades predict default consistently for both younger and older borrowers with very small differences between the two groups. There is no evidence that grades work better or worse for younger individuals specifically. Credit grade is clearly the most important determinant of interest rates, with age (proxied by credit history length) showing only a small additional effect on top of grade. Occupation couldn't be assessed since it exists only as messy free text that wasn't feasible to clean in time.
 
 <!-- Make title of bibliography here: -->
 <!-- \newpage -->

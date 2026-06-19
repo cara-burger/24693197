@@ -42,8 +42,8 @@ PersistenceResult <- expand_grid(Year = Years, Gender = c("M", "F")) %>%
 ```
 
 ```{r persistence-plot, echo=FALSE}
-g <- persistence_plot(PersistenceResult)
-g
+persistence_plot(PersistenceResult)
+
 ```
 
 - Persistence has become noticably more volatile for both sexes since roughly the 1960s
@@ -63,8 +63,8 @@ NameSurges
 ```
 
 ```{r name surge plot, echo=FALSE}
-g <- surge_plot(BabyNames, top_n = 20)
-g
+surge_plot(BabyNames, top_n = 20)
+
 ```
  
 - Several of the biggest male-name surges (Robert, John, James, Richard, Michael) all happen in exactly the same year (1946) which suggests something bigger was driving names generally that year, not a separate cause for each one
@@ -73,19 +73,33 @@ g
     - Shirley's surge coincides with the rise of child actress Shirley Temple, who became one of Hollywood's top stars by 1934 and was the industry's #1 box-office draw from 1935-1938, which is a classic example of a single celebrity driving a national naming trend.
     - Linda and Ashley most likely follow a similar culturally-driven trend as Shirley
 
-# More Recent Rising Names
+## More Recent Rising Names
 ```{r rising names per gender plots, echo=FALSE}
-g <- plot_rising_names(BabyNames, gender_input = "F", from_year = 2005, to_year = 2014, top_n = 5)
-g
+plot_rising_names(BabyNames, gender_input = "F", from_year = 2005, to_year = 2014, top_n = 5)
 
-g <- plot_rising_names(BabyNames, gender_input = "M", from_year = 2005, to_year = 2014, top_n = 5)
-g
+
+plot_rising_names(BabyNames, gender_input = "M", from_year = 2005, to_year = 2014, top_n = 5)
 
 ```
 
 - 2005 to 2014's fastest-rising names (Sophia, Harper, Liam, Mason, etc.) show       steady multi-year growth rather than a single sharp spike
 - Daleyza stands out as a name with zero history before 2012, then immediate growth   (a different pattern from names simply gaining popularity over time)
   - Interestingly, a quick google search attributes this rise in the name to the Mexican-American singer (Larry Hernandez) naming his daughter in 2010
+  
+## Billboard naming trends
+
+On the questions's Whitney Houston example, I checked whether chart-topping artists' names actually correspond to baby naming surges. I built billboard_bubble_plot() to plot each year's top Billboard #1 artist first names against how many babies were given that name that year (bubble size = count). In the spirit of the Whitney example, I wanted to compare the 2000-2014 and 1980-1989 windows.
+
+```{r billboard-bubble, echo=FALSE}
+billboard_bubble_plot(BabyNames, Billboard, from_year = 2000, to_year = 2014, top_n = 5)
+billboard_bubble_plot(BabyNames, Billboard, from_year = 1980, to_year = 1989, top_n = 5)
+```
+
+- Some names (Taylor in 2013, Justin in 2006, Christina/Jennifer in 2002-03) show large bubbles that line up with their chart-topping years.
+- Other large bubbles (Daniel, Michael, Mary) reflect names that were already extremely common regardless of any Billboard connection so from this plot it is difficult to distinguish which name surges are linked to the artists and which are genuinely common/popular names.
+- Many chart-topping first names (Usher, Kanye, Adele, Bruno, Queen) appear as small dots, suggesting chart dominance alone doesn't reliably predict baby naming impact.
+- The 1980s to the 2000s windows do not have very different patterns because both decades have a mix of big bubbles that belong to already common names and small bubbles of names that did not stick
+    - This data doesn't provide strong evidence that naming impact from celebrities has weakened (or strengthened) over time.
 
 ## Conclusions for the Agency
 
@@ -96,7 +110,8 @@ g
 - Large naming surges have two distinct drivers, and the agency should respond differently to each one:
     - Population-wide events (e.g. the 1946 male-name cluster, likely tied to the post-WWII baby boom) make already popular names more popular rather than creating new trendy ones. This is not useful for spotting a "next big name," since nothing new is actually trending.
     - Culturally-driven, name-specific spikes (Whitney Houston, Shirley Temple and likely Daleyza (from Larry Hernandez)) are the ones actually worth watching as these show a single celebrity, character, or cultural moment can increase the use of a name quite quickly. This is a better driver to consider when planning toy names. 
-- Watch for "zero-to-spike" names, not just "rising" names: Daleyza's pattern (no history, then sudden appearance) is a different pattern from gradually-rising names like Sophia or Liam. A sudden zero-to-surge name is more likely tied to a specific, identifiable cultural trigger, which is more useful for the agency's stated goal of tying toy names to cultural moments
+- The agency should also watch out for zero-history to sudden spike names like Daleyza as this could hint to a name suddenly gaining popularity. 
+- Overall, in recent years names have not been as persistent and so toy companies' should shy away from relying too much on such data.
 
 
 

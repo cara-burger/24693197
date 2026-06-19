@@ -1,0 +1,100 @@
+---
+title: "Loans and Credit"
+author: "24693197"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.pos = "H")
+
+library(tidyverse)
+library(fmxdat)
+
+list.files('code/', full.names = TRUE, recursive = TRUE) %>% .[grepl('.R', .)] %>%
+    as.list() %>%walk(~source(.))
+
+Loan_credit <- read_rds("data/Loan_Cred/loan_data.rds")
+Loan_credit <- clean_loans(Loan_credit)
+```
+
+# Introduction 
+
+This report looks at loan default trends using Lending Club data covering one million anonymised peer-to-peer loans. It looks at the beliefs the Director wishes to challenge. Namely, that home owners and people that’s been employed more than 10 years have a far lower probability of default with short term loans, that US States differ significantly when it comes to a culture of defaulting on short term loans and that Credit Grades (A - F) provide a great indicator for whether younger individuals will default or not. Also that interest rates are also clearly determined by age, occupation and credit scores.
+
+# Data  {-}
+## Data Cleaning and Exploration
+
+Before any analysis, the data was reduced to the columns relevant to this analysis and several cleaning steps were applied.
+
+- Two binary outcome variables were created from loan_status. Default_Flag takes the value 1 for loans charged off or defaulted, 0 for fully paid, and NA for current loans. These are excluded from default rate calculations as their outcome is not yet known. 
+
+- Employment length and loan term were stored as text ("6 years", "36 months") and converted to numeric for analysis.
+
+- Credit grade was set as an ordered factor from A (lowest risk) to G (highest risk).
+
+- Credit history length is used a s a proxy for age since there is no direct age variable in the dataset. It is derived from earliest_cr_line and it is used as a proxy since a longer history is likely linked to an older borrower.
+
+- Continuous variables with clear outliers were Winsorized at the 1st and 99th percentiles. DTI had impossible values ranging from -1 to 999, and annual income reached as high as $9.9 million so both required capping to prevent extreme values from distorting the results.
+
+## Key Risk Drivers
+
+### Default Rate by Credit Grade
+
+```{r plot-grade, echo=FALSE, fig.cap="Default rates rise monotonically from Grade A to G, confirming the grading system captures genuine credit risk."}
+defaults_by_grade_plot(Loan_credit)
+```
+The plot shows a clear strong relationship between credit grade and default rate (as expected). 
+
+### Default Rate by Loan Purpose
+
+```{r plot-purpose, echo=FALSE, fig.cap="Loan purpose varies substantially in associated default risk."}
+defaults_by_purpose_plot(Loan_credit)
+```
+
+Car and home improvement loans carry the lowest default rates at around, while small business and wedding loans sit at the top at. Thus, lenders should apply greater scrutiny to higher-risk purpose categories when assessing borrower credibility. This plot provides evidence that loan purpose is a a good credit risk signal. 
+
+## Evaluating the beliefs 
+
+### Belief: Homeowners and Long-Tenured Employees Default Less
+
+```{r plot-heuristic, echo=FALSE, fig.cap="The director's heuristic receives only partial support."}
+homeowner_employment_plot(Loan_credit)
+```
+
+The above plot somewhat confirms this belief since borrowers employed for 10 or more years show slightly lower default rates (lower by $1%$). This difference is really small so this belief is only partly supported by the data. On the other hand, homeowners (those with over and under 10 years of employment) have higher default rates than borrowers. 
+
+### Belief: US States Differ Significantly in Default Culture
+
+```{r plot-state, echo=FALSE, fig.cap="Default rates vary across states but Texas sits close to the national average.", fig.width=12, fig.height=5}
+default_by_state_plot(Loan_credit)
+```
+
+This belief is more closely supported by the data because default rates range from around $14%$ to about $27%/28%$. This means that US states do in fact differ significantly in default culture. Texas (labeled TX on the x-axis) sits slightly above the the average when looking at the bigger picture. 
+
+### Belief: Credit Grades (A - F) are Good Predictors of Whether Younger Individuals Will Default
+
+```{r plot-grade-age, echo=FALSE}
+grade_age_plot(Loan_credit)
+```
+
+The credit grading system has the same relationship as before for both younger (shorter credit history) and older (longer credit history) individuals. This relationship is that default rates increase with lower credit grades. The differences between older and younger individuals default rates' is very small. For higher grades, younger individuals have a slightly higher default rating while for higher grades it is the opposite. Thus, there is no evidence from the data to support the belief that grades work better or worse for younger borrowers specifically.
+
+### Belief: Interest Rates Are Determined by Age, Occupation, and Credit Scores
+
+```{r plot-int-rate, echo=FALSE}
+interest_rate_plot(Loan_credit)
+```
+
+From this graph it is obvious that credit rating is an obvious determinant of interest rates. From the basic understanding of interest rates and credit ratings, this correlation makes sense, because a lower credit rating means there is a higher risk of default. Thus, the risk is compensated for by a higher interest rate (compared to higher credit ratings). 
+
+```{r plot-int-rate-age}
+interest_rate_age_plot(Loan_credit)
+```
+
+Shorter-history borrowers pay slightly higher median interest rates than longer-history borrowers at most grades. This makes logical sense, since a shorter credit history probably gives lenders less default risk information besides the credit grade itself, so a small risk premium gets added (in the form of higher interest rates).
+
+# Conclusion
+
+Credit grade is one of the strongest predictors of default since there is a clear relationship (accross many of the plots) between grade and default rate. Loan purpose could also act as an alternative risk signal since car and home improvement loans have the lowest default rates while small business and wedding loans have the highest.
+
+The evidence on the four beliefs of the Institute is relatively mixed. The homeownership and length of employment belief is only partially supported because borrowers with 10 or more years of employment default slightly less, but the difference is small. The belief that US states differ in default culture is supported, with default rates ranging from around 14% to 27% across states and Texas sits close to the national average. Credit grades predict default consistently for both younger and older borrowers with very small differences between the two groups. There is no evidence that grades work better or worse for younger individuals specifically. Credit grade is clearly the most important determinant of interest rates, with age (proxied by credit history length) showing only a small additional effect on top of grade. Occupation couldn't be assessed since it exists only as messy free text that wasn't feasible to clean in time.
